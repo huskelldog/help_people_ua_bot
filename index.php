@@ -188,7 +188,7 @@ final class HelpUaConversation extends Conversation {
         });
     }
 
-    function typeAndWaitsQuarterOfASecond() {
+    function typeAndWaitsQuarterOfASecond(): HelpUaConversation {
         $this->getBot()->getDriver()->types($this->getBot()->getMessage());
         usleep(250000);
 
