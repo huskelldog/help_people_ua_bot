@@ -10,8 +10,6 @@ use BotMan\BotMan\Messages\Conversations\Conversation;
 use BotMan\BotMan\Messages\Incoming\Answer;
 use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\Question;
-use BotMan\Drivers\Telegram\Extensions\Keyboard;
-use BotMan\Drivers\Telegram\Extensions\KeyboardButton;
 use BotMan\Drivers\Telegram\TelegramDriver;
 use Predis\Client;
 use Predis\Collection\Iterator\Keyspace;
