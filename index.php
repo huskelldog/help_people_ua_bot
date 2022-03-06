@@ -11,6 +11,9 @@ use BotMan\BotMan\Messages\Incoming\Answer;
 use BotMan\BotMan\Messages\Outgoing\Actions\Button;
 use BotMan\BotMan\Messages\Outgoing\Question;
 use BotMan\Drivers\Telegram\TelegramDriver;
+use Google\Client as GoogleClient;
+use Google\Service\Sheets;
+use Google\Service\Sheets\ValueRange;
 use Predis\Client;
 use Predis\Collection\Iterator\Keyspace;
 use Psr\Http\Message\ServerRequestInterface;
@@ -175,7 +178,32 @@ final class HelpUaConversation extends Conversation {
                     return $this->askWhatIsNeeded(t('What else do you need?', $this->language));
                 case HelpUaConversation::NO:
                     $this->say(t('Ok, this is the list of things you have asked for', $this->language));
+                    $this->typeAndWaitsQuarterOfASecond();
+                    $this->say(t('Wait while I store your information...', $this->language));
+
+                    $sheets = new Sheets(create_google_client());
+                    $spreadsheetId = getenv('WHAT_IS_THE_SPREADSHEET_ID');
+                    $range = 'Help Needed!A1:D4';
+                    $cellValues = new ValueRange();
+                    $cells = [
+                        [
+                            implode($this->needs, ', '),
+                            $this->getBot()->getUser()->getUsername(),
+                            $this->location,
+                            (new DateTimeImmutable('now'))->format('Y-m-d H:i:s')
+                        ]
+                    ];
+                    $cellValues->setValues($cells);
+                    $parameters = [
+                        'valueInputOption' => 'USER_ENTERED'
+                    ];
+                    $response = $sheets->spreadsheets_values->append($spreadsheetId, $range, $cellValues, $parameters);
+
+                    // TODO: How to assert that things have worked out?
+
+                    $this->say(t('We have recorded your request, and we will try to match you with someone able to help.', $this->language));
                     $this->say(t('Stay safe, and take care!', $this->language));
+                    $this->typeAndWaitsQuarterOfASecond();
 
                     return $this->say('🇺🇦 **Slava Ukraini!** 🇺🇦');
                 default:
@@ -262,6 +290,18 @@ function t(string $source, string $language): string {
     }
 
     return $source . '(Notify @huizendveld with translation in ' . $language . ')';
+}
+
+function create_google_client(): GoogleClient {
+    $config = [
+        'credentials' => json_decode(getenv('WHAT_IS_THE_SPREADSHEET_SERVICE_ACCOUNT'), true),
+        'developer_key' => getenv('WHAT_IS_THE_SPREADSHEET_DEVELOPER_KEY'),
+    ];
+    $client = new GoogleClient($config);
+    $client->setApplicationName('Google Sheets');
+    $client->setScopes(Google_Service_Sheets::SPREADSHEETS);
+
+    return $client;
 }
 
 final class PredisCache implements CacheInterface {
