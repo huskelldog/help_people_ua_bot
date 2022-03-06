@@ -155,11 +155,11 @@ final class HelpUaConversation extends Conversation {
                 $this->say(" * " . $need);
             }
 
-            $this->confirmIfThatAreAllTheThingsNeeded();
+            $this->confirmThatAllTheThingsNeededAreListed();
         });
     }
 
-    protected function confirmIfThatAreAllTheThingsNeeded (): HelpUaConversation {
+    protected function confirmThatAllTheThingsNeededAreListed (): HelpUaConversation {
         $question = Question::create(t('Do you need to add anything else?', $this->language))
             ->callbackId('needs')
             ->addButton(Button::create(t('Yes', $this->language))->value(HelpUaConversation::YES))
@@ -209,7 +209,7 @@ final class HelpUaConversation extends Conversation {
                 default:
                     $this->say(t("Sorry, I didn't understand you. ", $this->language));
 
-                    return $this->confirmIfThatAreAllTheThingsNeeded();
+                    return $this->confirmThatAllTheThingsNeededAreListed();
             }
         });
     }
